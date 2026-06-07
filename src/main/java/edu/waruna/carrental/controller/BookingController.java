@@ -25,7 +25,7 @@ public class BookingController {
     private CarRepository carRepository;
 
     @Autowired
-    private UserRepository userRepository; // 🚀 1. Inject your UserRepository here
+    private UserRepository userRepository; 
 
     // Place a booking
     @PostMapping
