@@ -6,7 +6,12 @@ import edu.waruna.carrental.repository.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -43,6 +48,10 @@ public class CarController {
                     car.setSeatingCapacity(carDetails.getSeatingCapacity());
                     car.setDailyPrice(carDetails.getDailyPrice());
                     car.setStatus(carDetails.getStatus());
+                    // Preserve imageUrl if not provided in update
+                    if (carDetails.getImageUrl() != null) {
+                        car.setImageUrl(carDetails.getImageUrl());
+                    }
                     Car updatedCar = carRepository.save(car);
                     return ResponseEntity.ok(updatedCar);
                 })
@@ -56,5 +65,46 @@ public class CarController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * POST /api/cars/{id}/photo
+     * Accepts a multipart image file, saves it to uploads/cars/,
+     * updates the car's imageUrl in the database, and returns the updated car.
+     */
+    @PostMapping("/{id}/photo")
+    public ResponseEntity<?> uploadCarPhoto(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        try {
+            Car car = carRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Car not found with id: " + id));
+
+            String uploadDir = "uploads/cars";
+            Files.createDirectories(Paths.get(uploadDir));
+
+            String originalFileName = file.getOriginalFilename();
+            String extension = "";
+
+            if (originalFileName != null && originalFileName.contains(".")) {
+                extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            }
+
+            String fileName = "car-" + id + "-" + System.currentTimeMillis() + extension;
+            Path filePath = Paths.get(uploadDir, fileName);
+
+            Files.write(filePath, file.getBytes());
+
+            String imageUrl = "/uploads/cars/" + fileName;
+            car.setImageUrl(imageUrl);
+            Car updatedCar = carRepository.save(car);
+
+            return ResponseEntity.ok(updatedCar);
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Could not upload image: " + e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 }

@@ -36,4 +36,7 @@ public class Car {
     @Column(nullable = false)
     private String status; // AVAILABLE, RENTED, MAINTENANCE
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
 }
