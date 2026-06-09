@@ -115,6 +115,7 @@ public class BookingController {
             if (b.getUser() != null) {
                 UserDTO userDto = new UserDTO(b.getUser().getId(), b.getUser().getName(), b.getUser().getEmail(), b.getUser().getRole());
                 dto.setUser(userDto);
+                dto.setCustomerName(b.getUser().getName());
             }
 
             return dto;
@@ -143,6 +144,7 @@ public class BookingController {
             if (b.getUser() != null) {
                 UserDTO userDto = new UserDTO(b.getUser().getId(), b.getUser().getName(), b.getUser().getEmail(), b.getUser().getRole());
                 dto.setUser(userDto);
+                dto.setCustomerName(b.getUser().getName());
             }
 
             return dto;
